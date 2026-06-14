@@ -9,12 +9,12 @@ export function CatalogProvider({ children }) {
   const [subcategories, setSubcategories] = useState([]);
 
   useEffect(() => {
-    apiRequest("/api/categories")
-      .then((data) => {
+    const load = () =>
+      apiRequest("/api/categories").then((data) => {
         setCategories(data.categories);
         setSubcategories(data.subcategories);
-      })
-      .catch(() => {});
+      });
+    load().catch(() => { setTimeout(() => load().catch(() => {}), 3000); });
   }, []);
 
   const getCategoryName = (id, lang = "en") => {

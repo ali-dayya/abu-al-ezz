@@ -7,6 +7,7 @@ import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
 import ProductCard from "@/components/ui/ProductCard";
 import CategoryCard from "@/components/ui/CategoryCard";
+import ErrorState from "@/components/ui/ErrorState";
 import { useLanguage } from "@/context/LanguageContext";
 import { apiRequest } from "@/lib/api";
 
@@ -14,11 +15,17 @@ export default function HomePage() {
   const { t, lang, dir } = useLanguage();
   const [products, setProducts] = useState([]);
   const [categories, setCategories] = useState([]);
+  const [error, setError] = useState(false);
 
-  useEffect(() => {
-    apiRequest("/api/products").then(setProducts).catch(() => {});
-    apiRequest("/api/categories").then((data) => setCategories(data.categories)).catch(() => {});
-  }, []);
+  const loadData = () => {
+    setError(false);
+    Promise.all([
+      apiRequest("/api/products").then(setProducts),
+      apiRequest("/api/categories").then((data) => setCategories(data.categories)),
+    ]).catch(() => setError(true));
+  };
+
+  useEffect(() => { loadData(); }, []);
 
   const featured = products.slice(0, 4);
 
@@ -183,13 +190,17 @@ export default function HomePage() {
               <h2 className="section-title-light">{t("shopByCategory")}</h2>
               <span className="gold-divider" />
             </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-              {categories.map((cat, i) => (
-                <div key={cat.category_id} className="fade-up" style={{ animationDelay: `${i * 0.1}s` }}>
-                  <CategoryCard category={cat} />
-                </div>
-              ))}
-            </div>
+            {error ? (
+              <ErrorState onRetry={loadData} />
+            ) : (
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                {categories.map((cat, i) => (
+                  <div key={cat.category_id} className="fade-up" style={{ animationDelay: `${i * 0.1}s` }}>
+                    <CategoryCard category={cat} />
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
         </section>
 
@@ -213,13 +224,15 @@ export default function HomePage() {
               </Link>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-              {featured.map((product, i) => (
-                <div key={product.product_id} className="fade-up" style={{ animationDelay: `${i * 0.1}s` }}>
-                  <ProductCard product={product} />
-                </div>
-              ))}
-            </div>
+            {!error && (
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                {featured.map((product, i) => (
+                  <div key={product.product_id} className="fade-up" style={{ animationDelay: `${i * 0.1}s` }}>
+                    <ProductCard product={product} />
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
         </section>
 

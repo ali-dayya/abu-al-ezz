@@ -5,6 +5,7 @@ import { Package, ShoppingBag, Clock, AlertTriangle, Users, TrendingUp } from "l
 import AdminSidebar from "@/components/admin/AdminSidebar";
 import DashboardCard from "@/components/admin/DashboardCard";
 import StatusBadge from "@/components/ui/StatusBadge";
+import ErrorState from "@/components/ui/ErrorState";
 import { useLanguage } from "@/context/LanguageContext";
 import { apiRequest } from "@/lib/api";
 
@@ -12,10 +13,15 @@ export default function AdminDashboard() {
   const { t, lang } = useLanguage();
   const [data, setData] = useState({ products: [], orders: [], customers: [] });
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(false);
 
-  useEffect(() => {
-    apiRequest("/api/dashboard").then(setData).catch(() => {}).finally(() => setLoading(false));
-  }, []);
+  const loadData = () => {
+    setLoading(true);
+    setError(false);
+    apiRequest("/api/dashboard").then(setData).catch(() => setError(true)).finally(() => setLoading(false));
+  };
+
+  useEffect(() => { loadData(); }, []);
 
   const { products, orders, customers } = data;
 
@@ -68,6 +74,8 @@ export default function AdminDashboard() {
         <div className="p-6 space-y-8">
           {loading ? (
             <p className="text-sm" style={{ color:"#aaa" }}>{lang === "ar" ? "جارٍ التحميل..." : "Loading..."}</p>
+          ) : error ? (
+            <ErrorState onRetry={loadData} />
           ) : (
           <>
           {/* Stats grid */}

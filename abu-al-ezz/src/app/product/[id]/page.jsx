@@ -7,6 +7,7 @@ import { useParams } from "next/navigation";
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
 import StatusBadge from "@/components/ui/StatusBadge";
+import ErrorState from "@/components/ui/ErrorState";
 import { useLanguage } from "@/context/LanguageContext";
 import { useCart } from "@/context/CartContext";
 import { useCatalog } from "@/context/CatalogContext";
@@ -22,17 +23,32 @@ export default function ProductDetailPage() {
 
   const [productList, setProductList] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(false);
   const product = productList.find(p => p.product_id === parseInt(params.id));
 
-  useEffect(() => {
-    apiRequest("/api/products").then(setProductList).catch(() => {}).finally(() => setLoading(false));
-  }, []);
+  const loadData = () => {
+    setLoading(true);
+    setError(false);
+    apiRequest("/api/products").then(setProductList).catch(() => setError(true)).finally(() => setLoading(false));
+  };
+
+  useEffect(() => { loadData(); }, []);
 
   if (loading) return (
     <>
       <Navbar />
       <div className="min-h-screen flex items-center justify-center" style={{ background:"#FFFDF5" }}>
         <p className="text-sm" style={{ color:"#aaa" }}>{lang === "ar" ? "جارٍ التحميل..." : "Loading..."}</p>
+      </div>
+      <Footer />
+    </>
+  );
+
+  if (error) return (
+    <>
+      <Navbar />
+      <div className="min-h-screen flex items-center justify-center" style={{ background:"#FFFDF5" }}>
+        <ErrorState onRetry={loadData} />
       </div>
       <Footer />
     </>

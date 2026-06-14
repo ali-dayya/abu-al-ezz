@@ -153,7 +153,7 @@ export default function RegisterPage() {
         </div>
 
         <p className="text-center text-sm mt-5" style={{ color:"#818181" }}>
-          {t("haveAccount")}{" "}
+          {t("alreadyHaveAccount")}{" "}
           <Link href="/login" className="font-semibold" style={{ color:"#C9A84C" }}>{t("login")}</Link>
         </p>
       </div>

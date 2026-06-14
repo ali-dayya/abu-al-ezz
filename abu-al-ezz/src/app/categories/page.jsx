@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
 import ProductCard from "@/components/ui/ProductCard";
+import ErrorState from "@/components/ui/ErrorState";
 import { useLanguage } from "@/context/LanguageContext";
 import { useCatalog } from "@/context/CatalogContext";
 import { apiRequest } from "@/lib/api";
@@ -12,10 +13,15 @@ export default function CategoriesPage() {
   const { categories, getSubcategoriesForCategory } = useCatalog();
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(false);
 
-  useEffect(() => {
-    apiRequest("/api/products").then(setProducts).catch(() => {}).finally(() => setLoading(false));
-  }, []);
+  const loadData = () => {
+    setLoading(true);
+    setError(false);
+    apiRequest("/api/products").then(setProducts).catch(() => setError(true)).finally(() => setLoading(false));
+  };
+
+  useEffect(() => { loadData(); }, []);
 
   const getProductsByCategory = (categoryId) => products.filter((item) => item.category_id === categoryId);
 
@@ -33,7 +39,9 @@ export default function CategoriesPage() {
         </section>
 
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 space-y-20">
-          {categories.map(cat => {
+          {error ? (
+            <ErrorState onRetry={loadData} />
+          ) : categories.map(cat => {
             const subs = getSubcategoriesForCategory(cat.category_id);
             const catProducts = getProductsByCategory(cat.category_id);
             const catName = lang === "ar" ? cat.category_name_ar : cat.category_name_en;

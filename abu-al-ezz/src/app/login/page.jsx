@@ -113,9 +113,17 @@ export default function LoginPage() {
             </div>
 
             <div>
-              <label className="block text-xs font-bold uppercase tracking-widest mb-2" style={{ color:"#C9A84C" }}>
-                {t("password")}
-              </label>
+              <div className="flex items-center justify-between mb-2">
+                <label className="block text-xs font-bold uppercase tracking-widest" style={{ color:"#C9A84C" }}>
+                  {t("password")}
+                </label>
+                <Link href="/forgot-password" className="text-xs font-semibold transition-colors"
+                  style={{ color:"#aaa" }}
+                  onMouseEnter={e=>e.currentTarget.style.color="#C9A84C"}
+                  onMouseLeave={e=>e.currentTarget.style.color="#aaa"}>
+                  {t("forgotPassword")}
+                </Link>
+              </div>
               <div className="relative">
                 <input
                   type={showPass ? "text" : "password"}
@@ -141,7 +149,7 @@ export default function LoginPage() {
           </form>
 
           <p className="text-center text-sm mt-6" style={{ color:"#818181" }}>
-            {t("noAccount")}{" "}
+            {t("dontHaveAccount")}{" "}
             <Link href="/register" className="font-semibold transition-colors"
               style={{ color:"#C9A84C" }}>
               {t("register")}

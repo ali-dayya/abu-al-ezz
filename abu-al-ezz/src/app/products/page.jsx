@@ -4,6 +4,7 @@ import { Search, X } from "lucide-react";
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
 import ProductCard from "@/components/ui/ProductCard";
+import ErrorState from "@/components/ui/ErrorState";
 import { useLanguage } from "@/context/LanguageContext";
 import { apiRequest } from "@/lib/api";
 
@@ -12,14 +13,21 @@ export default function ProductsPage() {
   const [products, setProducts] = useState([]);
   const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(false);
   const [search, setSearch] = useState("");
   const [catFilter, setCatFilter] = useState("all");
   const [availFilter, setAvailFilter] = useState("all");
 
-  useEffect(() => {
-    apiRequest("/api/products").then(setProducts).catch(() => {}).finally(() => setLoading(false));
-    apiRequest("/api/categories").then((data) => setCategories(data.categories)).catch(() => {});
-  }, []);
+  const loadData = () => {
+    setLoading(true);
+    setError(false);
+    Promise.all([
+      apiRequest("/api/products").then(setProducts),
+      apiRequest("/api/categories").then((data) => setCategories(data.categories)),
+    ]).catch(() => setError(true)).finally(() => setLoading(false));
+  };
+
+  useEffect(() => { loadData(); }, []);
 
   const filtered = products.filter(p => {
     const name = lang === "ar" ? p.product_name_ar : p.product_name_en;
@@ -127,6 +135,8 @@ export default function ProductsPage() {
               <div className="text-center py-28">
                 <p className="text-sm" style={{ color:"#aaa" }}>{lang === "ar" ? "جارٍ التحميل..." : "Loading..."}</p>
               </div>
+            ) : error ? (
+              <ErrorState onRetry={loadData} />
             ) : filtered.length === 0 ? (
               <div className="text-center py-28">
                 <div className="text-6xl mb-5">🔍</div>

@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { Eye, X } from "lucide-react";
 import AdminSidebar from "@/components/admin/AdminSidebar";
 import StatusBadge from "@/components/ui/StatusBadge";
+import ErrorState from "@/components/ui/ErrorState";
 import { useLanguage } from "@/context/LanguageContext";
 import { apiRequest } from "@/lib/api";
 
@@ -12,11 +13,16 @@ export default function AdminOrdersPage() {
   const { t, lang } = useLanguage();
   const [orderList, setOrderList] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(false);
   const [viewOrder, setViewOrder] = useState(null);
 
-  useEffect(() => {
-    apiRequest("/api/orders").then(setOrderList).catch(() => {}).finally(() => setLoading(false));
-  }, []);
+  const loadData = () => {
+    setLoading(true);
+    setError(false);
+    apiRequest("/api/orders").then(setOrderList).catch(() => setError(true)).finally(() => setLoading(false));
+  };
+
+  useEffect(() => { loadData(); }, []);
 
   const updateStatus = async (orderId, status) => {
     const saved = await apiRequest(`/api/orders/${orderId}`, {
@@ -39,6 +45,8 @@ export default function AdminOrdersPage() {
         <div className="p-6">
           {loading ? (
             <p className="text-sm" style={{ color:"#aaa" }}>{lang === "ar" ? "جارٍ التحميل..." : "Loading..."}</p>
+          ) : error ? (
+            <ErrorState onRetry={loadData} />
           ) : (
           <div className="rounded-2xl overflow-hidden"
             style={{ background:"#fff", border:"1px solid #f0ece4", boxShadow:"0 2px 12px rgba(0,0,0,0.04)" }}>

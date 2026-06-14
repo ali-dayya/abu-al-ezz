@@ -2,6 +2,7 @@
 import { useEffect, useState } from "react";
 import { CheckCircle, Save } from "lucide-react";
 import AdminSidebar from "@/components/admin/AdminSidebar";
+import ErrorState from "@/components/ui/ErrorState";
 import { useLanguage } from "@/context/LanguageContext";
 import { apiRequest } from "@/lib/api";
 
@@ -10,10 +11,15 @@ export default function AdminStoreInfoPage() {
   const [info, setInfo] = useState({});
   const [saved, setSaved] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(false);
 
-  useEffect(() => {
-    apiRequest("/api/store-info").then(setInfo).catch(() => {}).finally(() => setLoading(false));
-  }, []);
+  const loadData = () => {
+    setLoading(true);
+    setError(false);
+    apiRequest("/api/store-info").then(setInfo).catch(() => setError(true)).finally(() => setLoading(false));
+  };
+
+  useEffect(() => { loadData(); }, []);
 
   const handleSave = async (e) => {
     e.preventDefault();
@@ -54,6 +60,8 @@ export default function AdminStoreInfoPage() {
         <div className="p-6 max-w-3xl">
           {loading ? (
             <p className="text-sm" style={{ color: "#aaa" }}>{lang === "ar" ? "جارٍ التحميل..." : "Loading..."}</p>
+          ) : error ? (
+            <ErrorState onRetry={loadData} />
           ) : (
             <>
               {saved && (

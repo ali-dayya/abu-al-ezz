@@ -11,7 +11,8 @@ export default function Footer() {
   const [storeInfo, setStoreInfo] = useState({});
 
   useEffect(() => {
-    apiRequest("/api/store-info").then(setStoreInfo).catch(() => {});
+    const load = () => apiRequest("/api/store-info").then(setStoreInfo);
+    load().catch(() => { setTimeout(() => load().catch(() => {}), 3000); });
   }, []);
   const links = [
     { href: "/", label: t("home") },

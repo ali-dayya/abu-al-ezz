@@ -2,6 +2,7 @@
 import { useEffect, useState } from "react";
 import { Plus, Pencil, Trash2, ChevronDown, ChevronRight, X } from "lucide-react";
 import AdminSidebar from "@/components/admin/AdminSidebar";
+import ErrorState from "@/components/ui/ErrorState";
 import { useLanguage } from "@/context/LanguageContext";
 import { apiRequest } from "@/lib/api";
 
@@ -10,6 +11,7 @@ export default function AdminCategoriesPage() {
   const [cats, setCats] = useState([]);
   const [subs, setSubs] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(false);
   const [expanded, setExpanded] = useState(null);
 
   // Category modal state
@@ -22,15 +24,19 @@ export default function AdminCategoriesPage() {
   const [editSub, setEditSub] = useState(null);
   const [subForm, setSubForm] = useState({ subcategory_name_en: "", subcategory_name_ar: "", category_id: 1 });
 
-  useEffect(() => {
+  const loadData = () => {
+    setLoading(true);
+    setError(false);
     apiRequest("/api/categories")
       .then((data) => {
         setCats(data.categories);
         setSubs(data.subcategories);
       })
-      .catch(() => {})
+      .catch(() => setError(true))
       .finally(() => setLoading(false));
-  }, []);
+  };
+
+  useEffect(() => { loadData(); }, []);
 
   // Category CRUD
   const openAddCat = () => {
@@ -135,6 +141,8 @@ export default function AdminCategoriesPage() {
         <div className="p-6 space-y-3">
           {loading ? (
             <p className="text-sm" style={{ color: "#aaa" }}>{lang === "ar" ? "جارٍ التحميل..." : "Loading..."}</p>
+          ) : error ? (
+            <ErrorState onRetry={loadData} />
           ) : cats.map(cat => {
             const catSubs = subs.filter(s => s.category_id === cat.category_id);
             const isExpanded = expanded === cat.category_id;

@@ -6,16 +6,22 @@ import { useLanguage } from "@/context/LanguageContext";
 import { useEffect, useState } from "react";
 import { ChevronDown, ChevronUp, ShoppingBag } from "lucide-react";
 import { apiRequest } from "@/lib/api";
+import ErrorState from "@/components/ui/ErrorState";
 
 export default function OrdersPage() {
   const { t, lang, dir } = useLanguage();
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(false);
   const [expanded, setExpanded] = useState(null);
 
-  useEffect(() => {
-    apiRequest("/api/orders").then(setOrders).catch(() => {}).finally(() => setLoading(false));
-  }, []);
+  const loadData = () => {
+    setLoading(true);
+    setError(false);
+    apiRequest("/api/orders").then(setOrders).catch(() => setError(true)).finally(() => setLoading(false));
+  };
+
+  useEffect(() => { loadData(); }, []);
 
   return (
     <>
@@ -32,6 +38,8 @@ export default function OrdersPage() {
             <div className="text-center py-24">
               <p className="text-sm" style={{ color:"#aaa" }}>{lang === "ar" ? "جارٍ التحميل..." : "Loading..."}</p>
             </div>
+          ) : error ? (
+            <ErrorState onRetry={loadData} />
           ) : orders.length === 0 ? (
             <div className="text-center py-24">
               <ShoppingBag size={56} className="mx-auto mb-4" style={{ color:"#e5dfc8" }} />

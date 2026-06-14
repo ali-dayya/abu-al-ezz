@@ -60,7 +60,27 @@ just copying and pasting a few things.
 
 ---
 
-## 4. Create the admin (owner) account
+## 4. Configure password reset emails (Supabase Auth settings)
+
+The site has a "Forgot password?" link on the login page that emails users a link to set
+a new password. For that link to work, Supabase needs to know which web addresses are
+allowed to receive it.
+
+1. In Supabase, go to **Authentication** → **URL Configuration**.
+2. Set **Site URL** to your live Vercel URL (e.g. `https://abu-al-ezz.vercel.app`).
+3. Under **Redirect URLs**, add (one per line):
+   - `https://abu-al-ezz.vercel.app/reset-password`
+   - `http://localhost:3000/reset-password` (only needed if you also run the site
+     locally for testing)
+4. Click **Save**.
+
+Without this step, password-reset emails are still sent, but clicking the link in the
+email will fail or redirect to the wrong page instead of letting the user set a new
+password.
+
+---
+
+## 5. Create the admin (owner) account
 
 The website has no admin account by default — you create your own and promote it.
 
@@ -82,7 +102,7 @@ You can repeat step 2 for any other email address to give more people admin acce
 
 ---
 
-## 5. Day-to-day use
+## 6. Day-to-day use
 
 - **Products** (`/admin/products`): add/edit/delete products, set price, stock,
   category/subcategory, and bilingual (English/Arabic) name & description. To add a
@@ -98,7 +118,7 @@ You can repeat step 2 for any other email address to give more people admin acce
 
 ---
 
-## 6. Important notes
+## 7. Important notes
 
 - **Free tier pausing**: Supabase free projects pause automatically after about a week
   with no activity. If the site stops loading data, go to the Supabase dashboard and

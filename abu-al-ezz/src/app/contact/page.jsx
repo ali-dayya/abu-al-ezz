@@ -3,16 +3,23 @@ import { useEffect, useState } from "react";
 import { Phone, MessageCircle, MapPin, Clock, Instagram } from "lucide-react";
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
+import ErrorState from "@/components/ui/ErrorState";
 import { useLanguage } from "@/context/LanguageContext";
 import { apiRequest } from "@/lib/api";
 
 export default function ContactPage() {
   const { t, lang } = useLanguage();
   const [storeInfo, setStoreInfo] = useState({});
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(false);
 
-  useEffect(() => {
-    apiRequest("/api/store-info").then(setStoreInfo).catch(() => {});
-  }, []);
+  const loadData = () => {
+    setLoading(true);
+    setError(false);
+    apiRequest("/api/store-info").then(setStoreInfo).catch(() => setError(true)).finally(() => setLoading(false));
+  };
+
+  useEffect(() => { loadData(); }, []);
 
   const cards = [
     { icon: Phone, bg:"#EFF6FF", icon_color:"#2563eb", label: t("phone_label"), value: storeInfo.phone, href:`tel:${storeInfo.phone}` },
@@ -34,6 +41,14 @@ export default function ContactPage() {
         </section>
 
         <div className="max-w-4xl mx-auto px-4 sm:px-6 py-16">
+          {loading ? (
+            <div className="text-center py-24">
+              <p className="text-sm" style={{ color:"#aaa" }}>{lang === "ar" ? "جارٍ التحميل..." : "Loading..."}</p>
+            </div>
+          ) : error ? (
+            <ErrorState onRetry={loadData} />
+          ) : (
+          <>
           <div className="text-center mb-12">
             <h2 className="font-display text-2xl font-bold" style={{ color:"#1a1a1a" }}>
               {lang==="ar"?storeInfo.store_name_ar:storeInfo.store_name_en}
@@ -89,6 +104,8 @@ export default function ContactPage() {
               </p>
             </div>
           </div>
+          </>
+          )}
         </div>
       </main>
       <Footer />

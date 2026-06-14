@@ -4,6 +4,7 @@ import Image from "next/image";
 import { Plus, Pencil, Trash2, Search, X, Package, Upload } from "lucide-react";
 import AdminSidebar from "@/components/admin/AdminSidebar";
 import StatusBadge from "@/components/ui/StatusBadge";
+import ErrorState from "@/components/ui/ErrorState";
 import { useLanguage } from "@/context/LanguageContext";
 import { apiRequest } from "@/lib/api";
 import { getSupabaseBrowserClient } from "@/lib/supabase/client";
@@ -16,6 +17,7 @@ export default function AdminProductsPage() {
   const [categories, setCategories] = useState([]);
   const [subcategories, setSubcategories] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [search, setSearch] = useState("");
   const [modalOpen, setModalOpen] = useState(false);
@@ -23,15 +25,19 @@ export default function AdminProductsPage() {
   const [editProduct, setEditProduct] = useState(null);
   const [form, setForm] = useState(emptyForm);
 
-  useEffect(() => {
+  const loadData = () => {
+    setLoading(true);
+    setError(false);
     Promise.all([
       apiRequest("/api/products").then(setProductList),
       apiRequest("/api/categories").then((data) => {
         setCategories(data.categories);
         setSubcategories(data.subcategories);
       }),
-    ]).catch(() => {}).finally(() => setLoading(false));
-  }, []);
+    ]).catch(() => setError(true)).finally(() => setLoading(false));
+  };
+
+  useEffect(() => { loadData(); }, []);
 
   const filtered = productList.filter(p =>
     p.product_name_en.toLowerCase().includes(search.toLowerCase()) || p.product_name_ar.includes(search)
@@ -129,6 +135,8 @@ export default function AdminProductsPage() {
           {/* Table */}
           {loading ? (
             <p className="text-sm" style={{ color:"#aaa" }}>{lang === "ar" ? "جارٍ التحميل..." : "Loading..."}</p>
+          ) : error ? (
+            <ErrorState onRetry={loadData} />
           ) : (
           <div className="rounded-2xl overflow-hidden"
             style={{ background:"#fff", border:"1px solid #f0ece4", boxShadow:"0 2px 12px rgba(0,0,0,0.04)" }}>
