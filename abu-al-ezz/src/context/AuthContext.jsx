@@ -11,7 +11,13 @@ export function AuthProvider({ children }) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const supabase = getSupabaseBrowserClient();
+    let supabase;
+    try {
+      supabase = getSupabaseBrowserClient();
+    } catch {
+      setLoading(false);
+      return;
+    }
 
     const loadProfile = async (sessionUser) => {
       if (!sessionUser) {
