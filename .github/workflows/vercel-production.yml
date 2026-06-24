@@ -3,7 +3,7 @@ name: Vercel Production Deploy
 on:
   workflow_dispatch:
   push:
-    branches: [main]
+    branches: [main, master]
 
 defaults:
   run:
@@ -20,7 +20,7 @@ jobs:
 
       - uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 24
           cache: npm
           cache-dependency-path: abu-al-ezz/package-lock.json
 
