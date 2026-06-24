@@ -5,6 +5,11 @@ Institution**, a household-goods, heaters & hookah retailer in Lebanon. Customer
 the catalog and submit order requests; the store owner manages products, categories,
 orders, and store info from a dedicated admin dashboard.
 
+## Team Members 
+-Ali Dayya 
+-Cynthia Issa 
+-Assil Sabbagh
+
 ## Tech Stack
 
 - **Framework**: Next.js 14 (App Router, React 18)
