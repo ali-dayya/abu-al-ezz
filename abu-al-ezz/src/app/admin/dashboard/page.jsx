@@ -1,7 +1,8 @@
 "use client";
 import { useEffect, useState } from "react";
 import Image from "next/image";
-import { Package, ShoppingBag, Clock, AlertTriangle, Users, TrendingUp } from "lucide-react";
+import { Package, ShoppingBag, Clock, AlertTriangle, Users, TrendingUp, Bell } from "lucide-react";
+import Link from "next/link";
 import AdminSidebar from "@/components/admin/AdminSidebar";
 import DashboardCard from "@/components/admin/DashboardCard";
 import StatusBadge from "@/components/ui/StatusBadge";
@@ -14,11 +15,13 @@ export default function AdminDashboard() {
   const [data, setData] = useState({ products: [], orders: [], customers: [] });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
+  const [pendingCount, setPendingCount] = useState(0);
 
   const loadData = () => {
     setLoading(true);
     setError(false);
     apiRequest("/api/dashboard").then(setData).catch(() => setError(true)).finally(() => setLoading(false));
+    apiRequest("/api/admin/pending-count").then(r => setPendingCount(r.count)).catch(() => {});
   };
 
   useEffect(() => { loadData(); }, []);
@@ -55,6 +58,18 @@ export default function AdminDashboard() {
             </p>
           </div>
           <div className="flex items-center gap-3">
+            {/* Notification bell */}
+            <Link href="/admin/orders" className="relative p-2 rounded-lg transition-colors" style={{ color: "#818181" }}
+              onMouseEnter={e => { e.currentTarget.style.color = "#C9A84C"; e.currentTarget.style.background = "rgba(201,168,76,0.08)"; }}
+              onMouseLeave={e => { e.currentTarget.style.color = "#818181"; e.currentTarget.style.background = "transparent"; }}>
+              <Bell size={18} />
+              {pendingCount > 0 && (
+                <span className="absolute -top-0.5 -right-0.5 w-5 h-5 rounded-full text-[10px] font-bold flex items-center justify-center"
+                  style={{ background: "#ef4444", color: "#fff" }}>
+                  {pendingCount > 9 ? "9+" : pendingCount}
+                </span>
+              )}
+            </Link>
             <div
               className="relative w-9 h-9 rounded-full overflow-hidden"
               style={{ border:"1.5px solid rgba(201,168,76,0.4)" }}

@@ -2,7 +2,7 @@
 import { useEffect, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { ArrowRight, ShieldCheck, Truck, Headphones } from "lucide-react";
+import { ArrowRight, MapPin, Truck, Users, Globe } from "lucide-react";
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
 import ProductCard from "@/components/ui/ProductCard";
@@ -11,18 +11,59 @@ import ErrorState from "@/components/ui/ErrorState";
 import { useLanguage } from "@/context/LanguageContext";
 import { apiRequest } from "@/lib/api";
 
+function ProductCardSkeleton() {
+  return (
+    <div className="rounded-2xl overflow-hidden" style={{ background:"#fff", border:"1px solid #f0ece4", boxShadow:"0 2px 12px rgba(0,0,0,0.05)" }}>
+      <div className="skeleton" style={{ paddingTop:"75%", borderRadius:0 }} />
+      <div className="p-4 space-y-3">
+        <div className="skeleton h-3 w-20" />
+        <div className="skeleton h-4 w-full" />
+        <div className="skeleton h-4 w-3/4" />
+        <div className="flex items-center justify-between pt-3 mt-1" style={{ borderTop:"1px solid #f0ece4" }}>
+          <div className="skeleton h-6 w-16" />
+          <div className="skeleton h-3 w-14" />
+        </div>
+        <div className="flex gap-2">
+          <div className="skeleton flex-1 h-10" style={{ borderRadius:"12px" }} />
+          <div className="skeleton w-12 h-10" style={{ borderRadius:"12px" }} />
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function CategoryCardSkeleton() {
+  return (
+    <div className="rounded-2xl p-6" style={{ background:"linear-gradient(145deg,#141414,#1c1c1c)", border:"1px solid rgba(201,168,76,0.15)" }}>
+      <div className="skeleton-dark w-14 h-14 rounded-2xl mb-4" />
+      <div className="skeleton-dark h-5 w-36 mb-2" />
+      <div className="space-y-1.5 mb-5">
+        <div className="skeleton-dark h-3 w-full" />
+        <div className="skeleton-dark h-3 w-4/5" />
+      </div>
+      <div className="flex gap-2 mb-5">
+        <div className="skeleton-dark h-6 w-16 rounded-full" />
+        <div className="skeleton-dark h-6 w-20 rounded-full" />
+      </div>
+      <div className="skeleton-dark h-4 w-20" />
+    </div>
+  );
+}
+
 export default function HomePage() {
   const { t, lang, dir } = useLanguage();
   const [products, setProducts] = useState([]);
   const [categories, setCategories] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
 
   const loadData = () => {
+    setLoading(true);
     setError(false);
     Promise.all([
       apiRequest("/api/products").then(setProducts),
       apiRequest("/api/categories").then((data) => setCategories(data.categories)),
-    ]).catch(() => setError(true));
+    ]).catch(() => setError(true)).finally(() => setLoading(false));
   };
 
   useEffect(() => { loadData(); }, []);
@@ -32,7 +73,7 @@ export default function HomePage() {
   return (
     <>
       <Navbar />
-      <main>
+      <main id="main-content">
 
         {/* ═══ HERO ════════════════════════════════════════════════════ */}
         <section
@@ -105,7 +146,7 @@ export default function HomePage() {
             >
               <span className="w-2 h-2 rounded-full animate-pulse-slow" style={{ background:"#C9A84C" }} />
               <span className="text-xs font-semibold tracking-widest uppercase" style={{ color:"#C9A84C" }}>
-                {lang === "ar" ? "منذ سنوات في خدمتكم" : "Serving Lebanon with Quality"}
+                {lang === "ar" ? "برجعين · إقليم الخروب · لبنان" : "Borjein · Iqlim Al-Kharoub · Lebanon"}
               </span>
             </div>
 
@@ -127,7 +168,9 @@ export default function HomePage() {
 
             {/* Subtitle */}
             <p className="text-base sm:text-lg max-w-xl mx-auto mb-10 leading-relaxed" style={{ color:"#666" }}>
-              {t("heroSubtitle")}
+              {lang === "ar"
+                ? "مؤسسة عائلية من برجعين — تثق بها البيوت في إقليم الخروب وعبر لبنان — أدوات منزلية ودفايات وأرجيلة، مع طلبات كبيرة تصل خارج لبنان."
+                : "A family institution from Borjein — trusted by homes across Iqlim Al-Kharoub and all of Lebanon for household essentials, heaters & hookah products. We also handle bulk orders outside Lebanon."}
             </p>
 
             {/* CTAs */}
@@ -144,9 +187,9 @@ export default function HomePage() {
             {/* Trust badges */}
             <div className="flex flex-wrap items-center justify-center gap-8 mt-16">
               {[
-                { icon: ShieldCheck, label: lang === "ar" ? "جودة مضمونة" : "Quality Guaranteed" },
-                { icon: Truck,       label: lang === "ar" ? "توصيل سريع"  : "Fast Delivery" },
-                { icon: Headphones,  label: lang === "ar" ? "دعم متميز"   : "Premium Support" },
+                { icon: MapPin, label: lang === "ar" ? "برجعين، إقليم الخروب" : "Borjein, Iqlim Al-Kharoub" },
+                { icon: Truck,  label: lang === "ar" ? "شحن داخل وخارج لبنان" : "Ships Inside & Outside Lebanon" },
+                { icon: Users,  label: lang === "ar" ? "مؤسسة عائلية"          : "Family Business" },
               ].map(({ icon: Icon, label }, i) => (
                 <div key={i} className="flex items-center gap-2" style={{ color:"#434343" }}>
                   <Icon size={15} style={{ color:"#C9A84C" }} />
@@ -190,7 +233,11 @@ export default function HomePage() {
               <h2 className="section-title-light">{t("shopByCategory")}</h2>
               <span className="gold-divider" />
             </div>
-            {error ? (
+            {loading ? (
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                {[...Array(6)].map((_, i) => <CategoryCardSkeleton key={i} />)}
+              </div>
+            ) : error ? (
               <ErrorState onRetry={loadData} />
             ) : (
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -224,7 +271,11 @@ export default function HomePage() {
               </Link>
             </div>
 
-            {!error && (
+            {loading ? (
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                {[...Array(4)].map((_, i) => <ProductCardSkeleton key={i} />)}
+              </div>
+            ) : !error && (
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
                 {featured.map((product, i) => (
                   <div key={product.product_id} className="fade-up" style={{ animationDelay: `${i * 0.1}s` }}>
@@ -236,44 +287,44 @@ export default function HomePage() {
           </div>
         </section>
 
-        {/* ═══ WHY CHOOSE US ══════════════════════════════════════════ */}
+        {/* ═══ OUR STORY ══════════════════════════════════════════════ */}
         <section className="py-24" style={{ background:"#111" }}>
           <div className="max-w-5xl mx-auto px-4 sm:px-6 text-center">
-            <p className="section-tag">{lang === "ar" ? "مزايانا" : "Why Us"}</p>
+            <p className="section-tag">{lang === "ar" ? "قصتنا" : "Our Story"}</p>
             <h2 className="section-title-light mb-4">
-              {lang === "ar" ? "لماذا تختارنا؟" : "Why Choose Us?"}
+              {lang === "ar" ? "اسم بُني على الثقة" : "A Name Built on Trust"}
             </h2>
             <span className="gold-divider" />
             <p className="mt-6 mb-14 text-sm" style={{ color:"#515151" }}>
               {lang === "ar"
-                ? "نقدم أفضل المنتجات بأعلى معايير الجودة"
-                : "We deliver the best products at the highest quality standards"}
+                ? "أجيال من العائلات في إقليم الخروب تعرف أين تجد ما تحتاج."
+                : "Generations of families across Iqlim Al-Kharoub know exactly where to come."}
             </p>
 
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
               {[
                 {
-                  emoji: "🏆",
-                  title: lang === "ar" ? "جودة عالية" : "Premium Quality",
+                  Icon: MapPin,
+                  title: lang === "ar" ? "من برجعين، إقليم الخروب" : "From Borjein, Iqlim Al-Kharoub",
                   desc: lang === "ar"
-                    ? "منتجات مختارة بعناية لضمان أعلى معايير الجودة"
-                    : "Carefully curated products ensuring the highest quality standards",
+                    ? "لسنا مجرد متجر. نحن مؤسسة عائلية لها جذور في برجعين، يعرفها كل بيت في إقليم الخروب وعبر لبنان."
+                    : "We're not just a store. We're a family institution rooted in Borjein — known to every household across Iqlim Al-Kharoub and all of Lebanon.",
                 },
                 {
-                  emoji: "💰",
-                  title: lang === "ar" ? "أسعار تنافسية" : "Competitive Prices",
+                  Icon: Globe,
+                  title: lang === "ar" ? "نشحن خارج لبنان" : "We Ship Outside Lebanon",
                   desc: lang === "ar"
-                    ? "أفضل الأسعار دون التنازل عن الجودة"
-                    : "Best prices without compromising on quality",
+                    ? "الطلبات الكبيرة هي تخصصنا. سواء كنت في لبنان أو خارجه، نرتّب الشحن لجميع منتجاتنا."
+                    : "Bulk orders are our specialty. Whether you're in Lebanon or abroad, we arrange large shipments of our full product range.",
                 },
                 {
-                  emoji: "🤝",
-                  title: lang === "ar" ? "خدمة موثوقة" : "Trusted Service",
+                  Icon: Users,
+                  title: lang === "ar" ? "عائلة، لا مجرد علامة" : "A Family, Not a Brand",
                   desc: lang === "ar"
-                    ? "خدمة عملاء متميزة وخبرة طويلة في السوق"
-                    : "Excellent customer service and long market experience",
+                    ? "مؤسسة أبو العز و أولاده عائلية منذ سنوات. حين تتعامل معنا، تتعامل مع أناس تعرفهم — لا مع شركة مجهولة."
+                    : "Abu Al-Ezz has been family-run for years. When you deal with us, you're dealing with people — not a faceless company.",
                 },
-              ].map((item, i) => (
+              ].map(({ Icon, title, desc }, i) => (
                 <div
                   key={i}
                   className="rounded-2xl p-7 text-left fade-up"
@@ -284,16 +335,16 @@ export default function HomePage() {
                   }}
                 >
                   <div
-                    className="text-3xl mb-5 w-14 h-14 rounded-2xl flex items-center justify-center"
+                    className="mb-5 w-14 h-14 rounded-2xl flex items-center justify-center"
                     style={{ background:"rgba(201,168,76,0.1)" }}
                   >
-                    {item.emoji}
+                    <Icon size={24} style={{ color:"#C9A84C" }} />
                   </div>
                   <h3 className="font-display font-bold text-lg mb-2" style={{ color:"#E8C97A" }}>
-                    {item.title}
+                    {title}
                   </h3>
                   <p className="text-sm leading-relaxed" style={{ color:"#515151" }}>
-                    {item.desc}
+                    {desc}
                   </p>
                 </div>
               ))}

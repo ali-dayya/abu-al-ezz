@@ -6,16 +6,26 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "test": "vitest run",
+    "verify": "npm run lint && npm test && npm run build",
+    "smoke": "node scripts/smoke-test.mjs",
+    "smoke:local": "node scripts/smoke-test.mjs http://localhost:3000",
+    "smoke:prod": "node scripts/smoke-test.mjs https://abu-al-ezz.vercel.app",
+    "smoke:ci": "node scripts/smoke-test.mjs http://127.0.0.1:3000 --no-health"
   },
   "dependencies": {
     "@supabase/ssr": "^0.5.2",
     "@supabase/supabase-js": "^2.45.4",
+    "@vercel/analytics": "^2.0.1",
+    "@vercel/speed-insights": "^2.0.0",
     "clsx": "^2.1.1",
     "lucide-react": "^0.383.0",
     "next": "14.2.35",
     "react": "^18",
-    "react-dom": "^18"
+    "react-dom": "^18",
+    "recharts": "^3.8.1",
+    "resend": "^6.12.4"
   },
   "devDependencies": {
     "@types/node": "^20",
@@ -25,6 +35,7 @@
     "eslint": "^8",
     "eslint-config-next": "14.2.35",
     "postcss": "^8",
-    "tailwindcss": "^3.4.1"
+    "tailwindcss": "^3.4.1",
+    "vitest": "^4.1.9"
   }
 }

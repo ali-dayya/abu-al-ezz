@@ -1,0 +1,26 @@
+{
+  "name": "Abu Al-Ezz Institution",
+  "short_name": "Abu Al-Ezz",
+  "description": "Quality household items, heaters and hookah products from Borjein, Iqlim Al-Kharoub, Lebanon.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#FFFDF5",
+  "theme_color": "#C9A84C",
+  "lang": "en",
+  "dir": "ltr",
+  "categories": ["shopping", "lifestyle"],
+  "icons": [
+    {
+      "src": "/logo.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/logo.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}

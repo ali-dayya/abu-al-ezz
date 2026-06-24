@@ -6,7 +6,7 @@ export default function ErrorState({ onRetry }) {
   const { lang } = useLanguage();
 
   return (
-    <div className="flex flex-col items-center justify-center text-center py-16 px-4">
+    <div role="alert" aria-live="assertive" className="flex flex-col items-center justify-center text-center py-16 px-4">
       <div className="w-14 h-14 rounded-2xl mx-auto mb-4 flex items-center justify-center" style={{ background:"#fef2f2" }}>
         <AlertTriangle size={24} style={{ color:"#ef4444" }} />
       </div>

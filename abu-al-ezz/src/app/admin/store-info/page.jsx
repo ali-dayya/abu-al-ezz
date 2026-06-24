@@ -1,6 +1,6 @@
 "use client";
 import { useEffect, useState } from "react";
-import { CheckCircle, Save } from "lucide-react";
+import { CheckCircle, Save, Mail, AlertCircle, Loader2 } from "lucide-react";
 import AdminSidebar from "@/components/admin/AdminSidebar";
 import ErrorState from "@/components/ui/ErrorState";
 import { useLanguage } from "@/context/LanguageContext";
@@ -12,6 +12,7 @@ export default function AdminStoreInfoPage() {
   const [saved, setSaved] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
+  const [emailTest, setEmailTest] = useState(null); // null | "sending" | {success, sentTo?, error?}
 
   const loadData = () => {
     setLoading(true);
@@ -20,6 +21,16 @@ export default function AdminStoreInfoPage() {
   };
 
   useEffect(() => { loadData(); }, []);
+
+  const handleTestEmail = async () => {
+    setEmailTest("sending");
+    try {
+      const result = await apiRequest("/api/admin/test-email", { method: "POST" });
+      setEmailTest(result);
+    } catch {
+      setEmailTest({ success: false, error: "Request failed — check your server logs." });
+    }
+  };
 
   const handleSave = async (e) => {
     e.preventDefault();
@@ -95,9 +106,8 @@ export default function AdminStoreInfoPage() {
                     <Field label="العنوان (عربي)" name="address_ar" dir="rtl" />
                     <Field label="Opening Hours (English)" name="open_hours_en" />
                     <Field label="أوقات العمل (عربي)" name="open_hours_ar" dir="rtl" />
-                    <div className="sm:col-span-2">
-                      <Field label="Instagram Link" name="insta_link" />
-                    </div>
+                    <Field label="Instagram Link" name="insta_link" />
+                    <Field label="Facebook Link" name="facebook_link" />
                   </div>
 
                   <div className="mt-6 pt-5" style={{ borderTop: "1px solid #f0ece4" }}>
@@ -114,6 +124,71 @@ export default function AdminStoreInfoPage() {
                   </div>
                 </div>
               </form>
+
+              {/* Email Settings */}
+              <div
+                className="mt-6 rounded-2xl p-6"
+                style={{ background: "#fff", border: "1px solid #f0ece4", boxShadow: "0 2px 12px rgba(0,0,0,0.04)" }}
+              >
+                <h2
+                  className="font-display font-bold mb-2 pb-4"
+                  style={{ color: "#1a1a1a", borderBottom: "1px solid #f0ece4" }}
+                >
+                  {lang === "ar" ? "إعدادات البريد الإلكتروني (Resend)" : "Email Settings (Resend)"}
+                </h2>
+                <p className="text-sm mb-5" style={{ color: "#818181", lineHeight: 1.6 }}>
+                  {lang === "ar"
+                    ? "أضف متغيرات البيئة على استضافتك لتفعيل إشعارات البريد الإلكتروني. ثم انقر على «إرسال بريد تجريبي» للتأكد."
+                    : "Set the environment variables on your host to enable email notifications, then click Send Test Email to verify."}
+                </p>
+
+                <div className="space-y-2 mb-5">
+                  {[
+                    { key: "RESEND_API_KEY", desc: lang === "ar" ? "مفتاح API من resend.com" : "API key from resend.com" },
+                    { key: "ADMIN_EMAIL", desc: lang === "ar" ? "البريد الذي يستقبل إشعارات الطلبات" : "Email that receives order notifications" },
+                    { key: "RESEND_FROM_EMAIL", desc: lang === "ar" ? "مثال: Abu Al-Ezz <no-reply@yourdomain.com>" : 'e.g. Abu Al-Ezz <no-reply@yourdomain.com>' },
+                  ].map(({ key, desc }) => (
+                    <div key={key} className="flex flex-wrap items-start gap-2 text-sm">
+                      <code
+                        className="px-2 py-0.5 rounded font-mono text-xs"
+                        style={{ background: "#f5f0e8", color: "#C9A84C", flexShrink: 0 }}
+                      >{key}</code>
+                      <span style={{ color: "#818181" }}>{desc}</span>
+                    </div>
+                  ))}
+                </div>
+
+                <div className="flex items-center gap-4 flex-wrap">
+                  <button
+                    onClick={handleTestEmail}
+                    disabled={emailTest === "sending"}
+                    className="flex items-center gap-2 text-sm font-bold px-5 py-2.5 rounded-xl transition-all disabled:opacity-60"
+                    style={{ background: "#0d0d0d", color: "#C9A84C", border: "1px solid rgba(201,168,76,0.3)" }}
+                    onMouseEnter={e => { if (emailTest !== "sending") e.currentTarget.style.background = "#1a1a1a"; }}
+                    onMouseLeave={e => { e.currentTarget.style.background = "#0d0d0d"; }}
+                  >
+                    {emailTest === "sending"
+                      ? <><Loader2 size={14} className="animate-spin" /> {lang === "ar" ? "جارٍ الإرسال..." : "Sending..."}</>
+                      : <><Mail size={14} /> {lang === "ar" ? "إرسال بريد تجريبي" : "Send Test Email"}</>
+                    }
+                  </button>
+
+                  {emailTest && emailTest !== "sending" && (
+                    <div
+                      className="flex items-center gap-2 text-sm font-medium px-4 py-2 rounded-xl"
+                      style={emailTest.success
+                        ? { background: "#d1fae5", color: "#065f46" }
+                        : { background: "#fee2e2", color: "#991b1b" }
+                      }
+                    >
+                      {emailTest.success
+                        ? <><CheckCircle size={14} /> {lang === "ar" ? `تم الإرسال إلى ${emailTest.sentTo}` : `Sent to ${emailTest.sentTo}`}</>
+                        : <><AlertCircle size={14} /> {emailTest.error}</>
+                      }
+                    </div>
+                  )}
+                </div>
+              </div>
             </>
           )}
         </div>

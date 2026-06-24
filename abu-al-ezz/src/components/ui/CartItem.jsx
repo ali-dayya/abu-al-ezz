@@ -23,6 +23,7 @@ export default function CartItem({ item }) {
           src={item.image_url}
           alt={name}
           fill
+          sizes="80px"
           className="object-cover"
           onError={(e) => { e.currentTarget.style.display = "none"; }}
         />

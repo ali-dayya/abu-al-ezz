@@ -11,6 +11,34 @@ import { getSupabaseBrowserClient } from "@/lib/supabase/client";
 
 const emptyForm = { product_name_en:"", product_name_ar:"", price:"", stock_quantity:"", category_id:"", subcategory_id:"", availability_status:"available", description_en:"", description_ar:"", image_url:"" };
 
+function ProductRowSkeleton() {
+  return (
+    <tr>
+      <td>
+        <div className="flex items-center gap-3">
+          <div className="skeleton w-10 h-10 rounded-xl flex-shrink-0" />
+          <div className="space-y-1.5">
+            <div className="skeleton h-3 w-32" />
+            <div className="skeleton h-2.5 w-20" />
+          </div>
+        </div>
+      </td>
+      <td><div className="skeleton h-4 w-16" /></td>
+      <td><div className="skeleton h-4 w-10" /></td>
+      <td><div className="skeleton h-6 w-24 rounded-full" /></td>
+      <td>
+        <div className="flex items-center gap-1">
+          <div className="skeleton h-7 w-7 rounded-lg" />
+          <div className="skeleton h-7 w-7 rounded-lg" />
+        </div>
+      </td>
+    </tr>
+  );
+}
+
+const MAX_IMAGE_BYTES = 5 * 1024 * 1024;
+const ALLOWED_IMAGE_TYPES = ["image/jpeg", "image/png", "image/webp", "image/gif"];
+
 export default function AdminProductsPage() {
   const { t, lang } = useLanguage();
   const [productList, setProductList] = useState([]);
@@ -86,6 +114,18 @@ export default function AdminProductsPage() {
   const handleImageUpload = async (e) => {
     const file = e.target.files?.[0];
     if (!file) return;
+
+    if (!ALLOWED_IMAGE_TYPES.includes(file.type)) {
+      alert(lang === "ar" ? "نوع الصورة غير مدعوم (JPG, PNG, WEBP, GIF فقط)" : "Unsupported image type (JPG, PNG, WEBP, GIF only)");
+      e.target.value = "";
+      return;
+    }
+    if (file.size > MAX_IMAGE_BYTES) {
+      alert(lang === "ar" ? "حجم الصورة أكبر من 5 ميجابايت" : "Image is larger than 5MB");
+      e.target.value = "";
+      return;
+    }
+
     setUploading(true);
     try {
       const supabase = getSupabaseBrowserClient();
@@ -134,7 +174,18 @@ export default function AdminProductsPage() {
 
           {/* Table */}
           {loading ? (
-            <p className="text-sm" style={{ color:"#aaa" }}>{lang === "ar" ? "جارٍ التحميل..." : "Loading..."}</p>
+            <div className="rounded-2xl overflow-hidden" style={{ background:"#fff", border:"1px solid #f0ece4", boxShadow:"0 2px 12px rgba(0,0,0,0.04)" }}>
+              <div className="overflow-x-auto">
+                <table className="luxury-table">
+                  <thead>
+                    <tr>{["Product","Price","Stock","Status",""].map((h,i)=><th key={i}>{h}</th>)}</tr>
+                  </thead>
+                  <tbody>
+                    {[...Array(8)].map((_,i) => <ProductRowSkeleton key={i} />)}
+                  </tbody>
+                </table>
+              </div>
+            </div>
           ) : error ? (
             <ErrorState onRetry={loadData} />
           ) : (
@@ -274,7 +325,7 @@ export default function AdminProductsPage() {
                   >
                     <Upload size={13} />
                     {lang === "ar" ? "رفع صورة" : "Upload Image"}
-                    <input type="file" accept="image/*" onChange={handleImageUpload} className="hidden" />
+                    <input type="file" accept="image/jpeg,image/png,image/webp,image/gif" onChange={handleImageUpload} className="hidden" />
                   </label>
                   {uploading && (
                     <span className="text-xs" style={{ color:"#aaa" }}>{lang === "ar" ? "جارٍ الرفع..." : "Uploading..."}</span>

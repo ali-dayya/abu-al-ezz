@@ -97,7 +97,7 @@ export default function RegisterPage() {
   );
 
   const fieldErr = (k) => errors[k] && (
-    <p className="text-xs mt-1.5" style={{ color:"#ef4444" }}>{errors[k]}</p>
+    <p id={`${k}-error`} role="alert" className="text-xs mt-1.5" style={{ color:"#ef4444" }}>{errors[k]}</p>
   );
 
   return (
@@ -120,25 +120,42 @@ export default function RegisterPage() {
               { k:"address",  label:lang==="ar"?"العنوان":"Address", type:"text", placeholder:lang==="ar"?"بيروت، لبنان":"Beirut, Lebanon" },
             ].map(({ k, label, type, placeholder }) => (
               <div key={k}>
-                <label className="block text-xs font-bold uppercase tracking-widest mb-1.5" style={{ color:"#C9A84C" }}>
+                <label htmlFor={`register-${k}`} className="block text-xs font-bold uppercase tracking-widest mb-1.5" style={{ color:"#C9A84C" }}>
                   {label}
                 </label>
-                <input type={type} value={form[k]} onChange={e=>setForm({...form,[k]:e.target.value})}
-                  placeholder={placeholder} className="luxury-input" />
+                <input
+                  id={`register-${k}`}
+                  type={type}
+                  value={form[k]}
+                  onChange={e=>setForm({...form,[k]:e.target.value})}
+                  placeholder={placeholder}
+                  className="luxury-input"
+                  aria-invalid={!!errors[k]}
+                  aria-describedby={errors[k] ? `${k}-error` : undefined}
+                />
                 {fieldErr(k)}
               </div>
             ))}
 
             {/* Password */}
             <div>
-              <label className="block text-xs font-bold uppercase tracking-widest mb-1.5" style={{ color:"#C9A84C" }}>
+              <label htmlFor="register-password" className="block text-xs font-bold uppercase tracking-widest mb-1.5" style={{ color:"#C9A84C" }}>
                 {t("password")}
               </label>
               <div className="relative">
-                <input type={showPass?"text":"password"} value={form.password}
+                <input
+                  id="register-password"
+                  type={showPass?"text":"password"}
+                  value={form.password}
                   onChange={e=>setForm({...form,password:e.target.value})}
-                  placeholder="••••••••" className="luxury-input" style={{ paddingRight:"44px" }} />
+                  placeholder="••••••••"
+                  className="luxury-input"
+                  style={{ paddingRight:"44px" }}
+                  aria-invalid={!!errors.password}
+                  aria-describedby={errors.password ? "password-error" : undefined}
+                />
                 <button type="button" onClick={()=>setShowPass(!showPass)}
+                  aria-label={showPass ? (lang==="ar"?"إخفاء كلمة المرور":"Hide password") : (lang==="ar"?"إظهار كلمة المرور":"Show password")}
                   className="absolute right-3 top-1/2 -translate-y-1/2" style={{ color:"#aaa" }}>
                   {showPass?<EyeOff size={16}/>:<Eye size={16}/>}
                 </button>

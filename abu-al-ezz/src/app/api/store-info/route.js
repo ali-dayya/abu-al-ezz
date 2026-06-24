@@ -1,18 +1,25 @@
 import { getStoreInfo, updateStoreInfo } from "@/lib/db";
 import { badRequest, errorResponse, ok } from "@/lib/responses";
+import { requireAdmin } from "@/lib/auth";
 
 export const dynamic = "force-dynamic";
 
 export async function GET() {
-  return ok(await getStoreInfo());
+  try {
+    return ok(await getStoreInfo());
+  } catch (err) {
+    return errorResponse(err);
+  }
 }
 
 export async function PUT(request) {
-  const body = await request.json();
+  const deny = await requireAdmin();
+  if (deny) return deny;
 
-  if (!body.store_name_en) {
-    return badRequest("Store name is required");
-  }
+  let body;
+  try { body = await request.json(); } catch { return badRequest("Invalid JSON body"); }
+
+  if (!body.store_name_en) return badRequest("Store name (English) is required");
 
   try {
     return ok(await updateStoreInfo(body));

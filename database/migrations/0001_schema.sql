@@ -276,8 +276,8 @@ create policy "order_items_select_own_or_admin" on public.order_items
 -- Storage: product images bucket
 -- ============================================================
 
-insert into storage.buckets (id, name, public)
-values ('product-images', 'product-images', true)
+insert into storage.buckets (id, name, public, file_size_limit, allowed_mime_types)
+values ('product-images', 'product-images', true, 5242880, array['image/jpeg','image/png','image/webp','image/gif'])
 on conflict (id) do nothing;
 
 create policy "product_images_public_read" on storage.objects

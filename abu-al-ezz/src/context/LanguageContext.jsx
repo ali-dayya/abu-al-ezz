@@ -61,6 +61,7 @@ export const translations = {
     subtotal: "Subtotal",
     notes: "Order Notes",
     notesPlaceholder: "Any special instructions or notes for your order...",
+    placeOrder: "Submit Order Request",
     submitOrder: "Submit Order Request",
     orderSuccess: "Your order request has been submitted and is waiting for admin confirmation.",
     continueShopping: "Continue Shopping",
@@ -139,6 +140,31 @@ export const translations = {
     aboutTitle: "About Us",
     aboutDesc: "Abu Al-Ezz Institution is a trusted store in Lebanon offering quality household items, heaters, and premium hookah products. We allow customers to browse and submit order requests online.",
 
+    // Profile
+    myProfile: "My Profile",
+    memberSince: "Member since",
+
+    // Wishlist
+    wishlist: "Wishlist",
+    addToWishlist: "Add to Wishlist",
+    inWishlist: "In Wishlist",
+
+    // Reviews
+    reviews: "Reviews",
+    writeReview: "Write a Review",
+    submitReview: "Submit Review",
+    noReviews: "No reviews yet. Be the first!",
+
+    // Reports
+    reports: "Reports",
+    totalRevenue: "Total Revenue",
+    unitsSold: "Units Sold",
+    revenueByCategory: "Revenue by Category",
+    topSellingProducts: "Top Selling Products",
+
+    // Audit Log
+    auditLog: "Audit Log",
+
     // Footer
     quickLinks: "Quick Links",
     followUs: "Follow Us",
@@ -197,6 +223,7 @@ export const translations = {
     subtotal: "المجموع الفرعي",
     notes: "ملاحظات الطلب",
     notesPlaceholder: "أي تعليمات أو ملاحظات خاصة بطلبك...",
+    placeOrder: "إرسال طلب الشراء",
     submitOrder: "إرسال طلب الشراء",
     orderSuccess: "تم إرسال طلبك بنجاح وهو بانتظار تأكيد الإدارة.",
     continueShopping: "متابعة التسوق",
@@ -270,6 +297,26 @@ export const translations = {
     aboutTitle: "من نحن",
     aboutDesc: "مؤسسة أبو العز و أولاده هي متجر موثوق في لبنان يوفر أدوات منزلية عالية الجودة ودفايات ومنتجات أرجيلة فاخرة. نتيح للعملاء تصفح المنتجات وإرسال طلبات الشراء عبر الإنترنت.",
 
+    myProfile: "الملف الشخصي",
+    memberSince: "عضو منذ",
+
+    wishlist: "المفضلة",
+    addToWishlist: "أضف للمفضلة",
+    inWishlist: "في المفضلة",
+
+    reviews: "التقييمات",
+    writeReview: "اكتب تقييمك",
+    submitReview: "إرسال التقييم",
+    noReviews: "لا توجد تقييمات بعد. كن الأول!",
+
+    reports: "التقارير",
+    totalRevenue: "إجمالي الإيرادات",
+    unitsSold: "الوحدات المباعة",
+    revenueByCategory: "الإيرادات حسب التصنيف",
+    topSellingProducts: "المنتجات الأكثر مبيعاً",
+
+    auditLog: "سجل التدقيق",
+
     quickLinks: "روابط سريعة",
     followUs: "تابعنا",
     allRights: "جميع الحقوق محفوظة",
@@ -287,6 +334,11 @@ export function LanguageProvider({ children }) {
       setDir(saved === "ar" ? "rtl" : "ltr");
     }
   }, []);
+
+  useEffect(() => {
+    document.documentElement.lang = lang;
+    document.documentElement.dir = lang === "ar" ? "rtl" : "ltr";
+  }, [lang]);
 
   const toggleLanguage = () => {
     const newLang = lang === "en" ? "ar" : "en";

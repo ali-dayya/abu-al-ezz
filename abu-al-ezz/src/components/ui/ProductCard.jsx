@@ -1,15 +1,17 @@
 "use client";
 import Image from "next/image";
 import Link from "next/link";
-import { ShoppingCart, Eye, Package } from "lucide-react";
+import { ShoppingCart, Eye, Package, GitCompareArrows } from "lucide-react";
 import { useLanguage } from "@/context/LanguageContext";
 import { useCart } from "@/context/CartContext";
 import { useCatalog } from "@/context/CatalogContext";
+import { useToast } from "@/context/ToastContext";
 
 export default function ProductCard({ product }) {
   const { t, lang } = useLanguage();
   const { addToCart } = useCart();
   const { getCategoryName } = useCatalog();
+  const { addToast } = useToast();
   const isAvailable = product.availability_status === "available";
   const name = lang === "ar" ? product.product_name_ar : product.product_name_en;
   const catName = getCategoryName(product.category_id, lang);
@@ -41,6 +43,7 @@ export default function ProductCard({ product }) {
             src={product.image_url}
             alt={name}
             fill
+            sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
             className="object-cover"
             style={{ transition: "transform 0.5s ease" }}
             onError={(e) => { e.currentTarget.style.display = "none"; }}
@@ -127,8 +130,12 @@ export default function ProductCard({ product }) {
             {t("viewDetails")}
           </Link>
           <button
-            onClick={() => isAvailable && addToCart(product)}
+            onClick={() => { if (isAvailable) { addToCart(product); addToast(lang === "ar" ? "تمت الإضافة للسلة" : "Added to cart", "success"); } }}
             disabled={!isAvailable}
+            aria-label={isAvailable
+              ? (lang === "ar" ? `إضافة ${name} إلى السلة` : `Add ${name} to cart`)
+              : (lang === "ar" ? `${name} - غير متوفر` : `${name} - out of stock`)
+            }
             className="flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-xl text-sm font-semibold transition-all duration-200"
             style={isAvailable
               ? { background: "#0d0d0d", color: "#C9A84C" }
@@ -138,6 +145,22 @@ export default function ProductCard({ product }) {
             onMouseLeave={e => { if (isAvailable) e.currentTarget.style.background = "#0d0d0d"; }}
           >
             <ShoppingCart size={15} />
+          </button>
+          <button
+            onClick={() => {
+              const ids = JSON.parse(localStorage.getItem("compare-products") || "[]");
+              if (ids.includes(product.product_id)) return;
+              if (ids.length >= 4) { ids.shift(); }
+              ids.push(product.product_id);
+              localStorage.setItem("compare-products", JSON.stringify(ids));
+            }}
+            aria-label={lang === "ar" ? "إضافة للمقارنة" : "Add to compare"}
+            className="flex items-center justify-center w-10 py-2.5 rounded-xl transition-all duration-200"
+            style={{ border: "1px solid #f0ece4", color: "#aaa" }}
+            onMouseEnter={e => { e.currentTarget.style.color = "#C9A84C"; e.currentTarget.style.borderColor = "rgba(201,168,76,0.4)"; }}
+            onMouseLeave={e => { e.currentTarget.style.color = "#aaa"; e.currentTarget.style.borderColor = "#f0ece4"; }}
+          >
+            <GitCompareArrows size={14} />
           </button>
         </div>
       </div>

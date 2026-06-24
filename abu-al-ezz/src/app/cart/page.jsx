@@ -1,7 +1,7 @@
 "use client";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
-import { ShoppingBag, CheckCircle, ArrowRight, Trash2 } from "lucide-react";
+import { ShoppingBag, CheckCircle, ArrowRight, Trash2, Tag, MapPin } from "lucide-react";
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
 import CartItem from "@/components/ui/CartItem";
@@ -17,6 +17,38 @@ export default function CartPage() {
   const [notes, setNotes] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
+  const [couponCode, setCouponCode] = useState("");
+  const [couponResult, setCouponResult] = useState(null);
+  const [couponError, setCouponError] = useState("");
+  const [couponLoading, setCouponLoading] = useState(false);
+  const [zones, setZones] = useState([]);
+  const [selectedZone, setSelectedZone] = useState(null);
+
+  useEffect(() => {
+    apiRequest("/api/delivery-zones").then(setZones).catch(() => {});
+  }, []);
+
+  const applyCoupon = async () => {
+    if (!couponCode.trim()) return;
+    setCouponLoading(true);
+    setCouponError("");
+    setCouponResult(null);
+    try {
+      const result = await apiRequest("/api/coupons/validate", {
+        method: "POST",
+        body: JSON.stringify({ code: couponCode, order_amount: cartTotal }),
+      });
+      setCouponResult(result);
+    } catch (err) {
+      setCouponError(err.message);
+    } finally {
+      setCouponLoading(false);
+    }
+  };
+
+  const deliveryFee = selectedZone ? zones.find((z) => z.zone_id === selectedZone)?.delivery_fee || 0 : 0;
+  const discount = couponResult?.discount || 0;
+  const finalTotal = Math.max(0, cartTotal - discount + deliveryFee);
 
   const handleSubmit = async () => {
     if (cartItems.length === 0 || !user) return;
@@ -32,6 +64,8 @@ export default function CartPage() {
             product_id: item.product_id,
             quantity: item.qty,
           })),
+          coupon_code: couponResult?.code || "",
+          delivery_zone_id: selectedZone || null,
         }),
       });
       setOrderSubmitted(true);
@@ -46,7 +80,7 @@ export default function CartPage() {
   if (orderSubmitted) return (
     <>
       <Navbar />
-      <main className="min-h-screen flex items-center justify-center px-4" style={{ background:"#FFFDF5" }}>
+      <main id="main-content" className="min-h-screen flex items-center justify-center px-4" style={{ background:"#FFFDF5" }}>
         <div className="max-w-md w-full text-center">
           <div
             className="rounded-3xl p-12"
@@ -84,7 +118,7 @@ export default function CartPage() {
   return (
     <>
       <Navbar />
-      <main style={{ minHeight:"100vh", background:"#FFFDF5" }}>
+      <main id="main-content" style={{ minHeight:"100vh", background:"#FFFDF5" }}>
         {/* Header */}
         <section style={{ background:"#0d0d0d", padding:"60px 0 52px" }}>
           <div className="max-w-7xl mx-auto px-4 text-center">
@@ -138,10 +172,11 @@ export default function CartPage() {
                   className="mt-4 rounded-2xl p-5"
                   style={{ background:"#fff", border:"1px solid #f0ece4" }}
                 >
-                  <label className="text-xs font-bold uppercase tracking-widest block mb-3" style={{ color:"#C9A84C" }}>
+                  <label htmlFor="order-notes" className="text-xs font-bold uppercase tracking-widest block mb-3" style={{ color:"#C9A84C" }}>
                     {t("notes")}
                   </label>
                   <textarea
+                    id="order-notes"
                     value={notes}
                     onChange={e => setNotes(e.target.value)}
                     rows={3}
@@ -175,15 +210,89 @@ export default function CartPage() {
 
                 <div style={{ height:"1px", background:"#f0ece4", margin:"16px 0" }} />
 
-                <div className="flex items-center justify-between mb-6">
+                {/* Coupon code */}
+                <div className="mb-4">
+                  <label className="text-xs font-bold uppercase tracking-widest block mb-2" style={{ color: "#C9A84C" }}>
+                    <Tag size={12} className="inline mr-1" />
+                    {lang === "ar" ? "كود الخصم" : "Coupon Code"}
+                  </label>
+                  <div className="flex gap-2">
+                    <input
+                      value={couponCode}
+                      onChange={(e) => setCouponCode(e.target.value.toUpperCase())}
+                      placeholder={lang === "ar" ? "أدخل الكود" : "Enter code"}
+                      className="luxury-input flex-1 text-sm"
+                      disabled={!!couponResult}
+                    />
+                    {couponResult ? (
+                      <button onClick={() => { setCouponResult(null); setCouponCode(""); }} className="px-3 py-2 rounded-xl text-xs font-semibold" style={{ color: "#ef4444", border: "1px solid #fecaca" }}>
+                        {lang === "ar" ? "إزالة" : "Remove"}
+                      </button>
+                    ) : (
+                      <button onClick={applyCoupon} disabled={couponLoading || !couponCode.trim()} className="px-3 py-2 rounded-xl text-xs font-semibold"
+                        style={{ background: "#0d0d0d", color: "#C9A84C", opacity: couponLoading ? 0.6 : 1 }}>
+                        {couponLoading ? "..." : (lang === "ar" ? "تطبيق" : "Apply")}
+                      </button>
+                    )}
+                  </div>
+                  {couponError && <p className="text-xs mt-1" style={{ color: "#ef4444" }}>{couponError}</p>}
+                  {couponResult && (
+                    <p className="text-xs mt-1" style={{ color: "#22c55e" }}>
+                      {couponResult.discount_type === "percentage" ? `${couponResult.discount_value}%` : `$${couponResult.discount_value.toFixed(2)}`} off! -${couponResult.discount.toFixed(2)}
+                    </p>
+                  )}
+                </div>
+
+                {/* Delivery zone */}
+                {zones.length > 0 && (
+                  <div className="mb-4">
+                    <label className="text-xs font-bold uppercase tracking-widest block mb-2" style={{ color: "#C9A84C" }}>
+                      <MapPin size={12} className="inline mr-1" />
+                      {lang === "ar" ? "منطقة التوصيل" : "Delivery Zone"}
+                    </label>
+                    <select
+                      value={selectedZone || ""}
+                      onChange={(e) => setSelectedZone(e.target.value ? Number(e.target.value) : null)}
+                      className="luxury-input w-full text-sm"
+                    >
+                      <option value="">{lang === "ar" ? "اختر المنطقة" : "Select zone"}</option>
+                      {zones.map((z) => (
+                        <option key={z.zone_id} value={z.zone_id}>
+                          {lang === "ar" ? z.zone_name_ar : z.zone_name_en} — {z.delivery_fee > 0 ? `$${z.delivery_fee.toFixed(2)}` : (lang === "ar" ? "مجاني" : "Free")} ({z.estimated_days} {lang === "ar" ? "يوم" : "days"})
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                )}
+
+                <div className="space-y-2 text-sm mb-4">
+                  <div className="flex justify-between">
+                    <span style={{ color: "#818181" }}>{t("subtotal")}</span>
+                    <span style={{ color: "#1a1a1a" }}>${cartTotal.toFixed(2)}</span>
+                  </div>
+                  {discount > 0 && (
+                    <div className="flex justify-between">
+                      <span style={{ color: "#22c55e" }}>{lang === "ar" ? "الخصم" : "Discount"}</span>
+                      <span style={{ color: "#22c55e" }}>-${discount.toFixed(2)}</span>
+                    </div>
+                  )}
+                  {deliveryFee > 0 && (
+                    <div className="flex justify-between">
+                      <span style={{ color: "#818181" }}>{lang === "ar" ? "التوصيل" : "Delivery"}</span>
+                      <span style={{ color: "#1a1a1a" }}>${deliveryFee.toFixed(2)}</span>
+                    </div>
+                  )}
+                </div>
+
+                <div className="flex items-center justify-between mb-6 pt-3" style={{ borderTop: "2px solid #f0ece4" }}>
                   <span className="font-bold" style={{ color:"#1a1a1a" }}>{t("total")}</span>
                   <span className="text-2xl font-bold" style={{ color:"#C9A84C" }}>
-                    ${cartTotal.toFixed(2)}
+                    ${finalTotal.toFixed(2)}
                   </span>
                 </div>
 
                 {error && (
-                  <div className="mb-4 px-4 py-3 rounded-xl text-sm"
+                  <div role="alert" aria-live="assertive" className="mb-4 px-4 py-3 rounded-xl text-sm"
                     style={{ background:"#fef2f2", color:"#991b1b", border:"1px solid #fecaca" }}>
                     {error}
                   </div>

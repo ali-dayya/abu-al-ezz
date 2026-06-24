@@ -8,6 +8,27 @@ import ErrorState from "@/components/ui/ErrorState";
 import { useLanguage } from "@/context/LanguageContext";
 import { apiRequest } from "@/lib/api";
 
+function ProductCardSkeleton() {
+  return (
+    <div className="rounded-2xl overflow-hidden" style={{ background:"#fff", border:"1px solid #f0ece4", boxShadow:"0 2px 12px rgba(0,0,0,0.05)" }}>
+      <div className="skeleton" style={{ paddingTop:"75%", borderRadius:0 }} />
+      <div className="p-4 space-y-3">
+        <div className="skeleton h-3 w-20" />
+        <div className="skeleton h-4 w-full" />
+        <div className="skeleton h-4 w-3/4" />
+        <div className="flex items-center justify-between pt-3 mt-1" style={{ borderTop:"1px solid #f0ece4" }}>
+          <div className="skeleton h-6 w-16" />
+          <div className="skeleton h-3 w-14" />
+        </div>
+        <div className="flex gap-2">
+          <div className="skeleton flex-1 h-10" style={{ borderRadius:"12px" }} />
+          <div className="skeleton w-12 h-10" style={{ borderRadius:"12px" }} />
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export default function ProductsPage() {
   const { t, lang } = useLanguage();
   const [products, setProducts] = useState([]);
@@ -17,6 +38,7 @@ export default function ProductsPage() {
   const [search, setSearch] = useState("");
   const [catFilter, setCatFilter] = useState("all");
   const [availFilter, setAvailFilter] = useState("all");
+  const [sortBy, setSortBy] = useState("default");
 
   const loadData = () => {
     setLoading(true);
@@ -37,13 +59,25 @@ export default function ProductsPage() {
     return matchSearch && matchCat && matchAvail;
   });
 
-  const hasFilters = search || catFilter !== "all" || availFilter !== "all";
-  const clearFilters = () => { setSearch(""); setCatFilter("all"); setAvailFilter("all"); };
+  const sorted = [...filtered].sort((a, b) => {
+    if (sortBy === "price_asc") return a.price - b.price;
+    if (sortBy === "price_desc") return b.price - a.price;
+    if (sortBy === "newest") return b.product_id - a.product_id;
+    if (sortBy === "name_az") {
+      const na = lang === "ar" ? a.product_name_ar : a.product_name_en;
+      const nb = lang === "ar" ? b.product_name_ar : b.product_name_en;
+      return na.localeCompare(nb, lang === "ar" ? "ar" : "en");
+    }
+    return a.product_id - b.product_id;
+  });
+
+  const hasFilters = search || catFilter !== "all" || availFilter !== "all" || sortBy !== "default";
+  const clearFilters = () => { setSearch(""); setCatFilter("all"); setAvailFilter("all"); setSortBy("default"); };
 
   return (
     <>
       <Navbar />
-      <main style={{ minHeight: "100vh", background: "#FFFDF5" }}>
+      <main id="main-content" style={{ minHeight: "100vh", background: "#FFFDF5" }}>
 
         {/* Page header */}
         <section style={{ background: "#0d0d0d", padding: "60px 0 56px" }}>
@@ -73,6 +107,7 @@ export default function ProductsPage() {
                   value={search}
                   onChange={e => setSearch(e.target.value)}
                   placeholder={t("searchPlaceholder")}
+                  aria-label={lang === "ar" ? "البحث عن المنتجات" : "Search products"}
                   className="luxury-input"
                   style={{ paddingLeft: "40px" }}
                 />
@@ -82,6 +117,7 @@ export default function ProductsPage() {
               <select
                 value={catFilter}
                 onChange={e => setCatFilter(e.target.value)}
+                aria-label={lang === "ar" ? "تصفية حسب الفئة" : "Filter by category"}
                 className="luxury-input"
                 style={{ minWidth: "160px" }}
               >
@@ -97,12 +133,28 @@ export default function ProductsPage() {
               <select
                 value={availFilter}
                 onChange={e => setAvailFilter(e.target.value)}
+                aria-label={lang === "ar" ? "تصفية حسب التوفر" : "Filter by availability"}
                 className="luxury-input"
                 style={{ minWidth: "150px" }}
               >
                 <option value="all">{t("allAvailability")}</option>
                 <option value="available">{t("available")}</option>
                 <option value="out_of_stock">{t("outOfStock")}</option>
+              </select>
+
+              {/* Sort */}
+              <select
+                value={sortBy}
+                onChange={e => setSortBy(e.target.value)}
+                aria-label={lang === "ar" ? "ترتيب المنتجات" : "Sort products"}
+                className="luxury-input"
+                style={{ minWidth: "160px" }}
+              >
+                <option value="default">{lang === "ar" ? "الترتيب الافتراضي" : "Default Order"}</option>
+                <option value="price_asc">{lang === "ar" ? "السعر: من الأقل" : "Price: Low to High"}</option>
+                <option value="price_desc">{lang === "ar" ? "السعر: من الأعلى" : "Price: High to Low"}</option>
+                <option value="name_az">{lang === "ar" ? "الاسم: أ–ي" : "Name: A–Z"}</option>
+                <option value="newest">{lang === "ar" ? "الأحدث أولاً" : "Newest First"}</option>
               </select>
 
               {/* Clear */}
@@ -124,22 +176,22 @@ export default function ProductsPage() {
         <section className="py-14">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="flex items-center justify-between mb-8">
-              <p className="text-sm font-medium" style={{ color:"#818181" }}>
-                <span className="font-bold" style={{ color:"#1a1a1a" }}>{filtered.length}</span>
+              <p className="text-sm font-medium" style={{ color:"#818181" }} aria-live="polite" aria-atomic="true">
+                {!loading && (<><span className="font-bold" style={{ color:"#1a1a1a" }}>{sorted.length}</span>
                 {" "}{lang === "ar" ? "منتج" : "products"}
-                {hasFilters && <span style={{ color:"#C9A84C" }}> · filtered</span>}
+                {hasFilters && <span style={{ color:"#C9A84C" }}> · filtered</span>}</>)}
               </p>
             </div>
 
             {loading ? (
-              <div className="text-center py-28">
-                <p className="text-sm" style={{ color:"#aaa" }}>{lang === "ar" ? "جارٍ التحميل..." : "Loading..."}</p>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                {[...Array(8)].map((_, i) => <ProductCardSkeleton key={i} />)}
               </div>
             ) : error ? (
               <ErrorState onRetry={loadData} />
-            ) : filtered.length === 0 ? (
+            ) : sorted.length === 0 ? (
               <div className="text-center py-28">
-                <div className="text-6xl mb-5">🔍</div>
+                <Search size={56} className="mx-auto mb-5" style={{ color: "#e5dfc8" }} />
                 <h3 className="font-display text-xl font-semibold mb-2" style={{ color:"#434343" }}>{t("noProducts")}</h3>
                 <button
                   onClick={clearFilters}
@@ -151,7 +203,7 @@ export default function ProductsPage() {
               </div>
             ) : (
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-                {filtered.map((product, i) => (
+                {sorted.map((product, i) => (
                   <div key={product.product_id} className="fade-up" style={{ animationDelay: `${(i % 8) * 0.07}s` }}>
                     <ProductCard product={product} />
                   </div>

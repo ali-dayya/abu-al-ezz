@@ -4,6 +4,10 @@ export function ok(data, init) {
   return NextResponse.json(data, init);
 }
 
+export function unauthorized(message = "Unauthorized") {
+  return NextResponse.json({ error: message }, { status: 401 });
+}
+
 export function badRequest(message) {
   return NextResponse.json({ error: message }, { status: 400 });
 }
@@ -14,6 +18,10 @@ export function notFound(message = "Resource not found") {
 
 export function forbidden(message = "Forbidden") {
   return NextResponse.json({ error: message }, { status: 403 });
+}
+
+export function tooManyRequests(message = "Too many requests. Please try again in a moment.") {
+  return NextResponse.json({ error: message }, { status: 429 });
 }
 
 export function errorResponse(error, fallbackMessage = "Something went wrong") {

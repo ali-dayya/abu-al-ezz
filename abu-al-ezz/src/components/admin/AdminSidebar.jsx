@@ -2,7 +2,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import { usePathname, useRouter } from "next/navigation";
-import { LayoutDashboard, Package, Tag, ClipboardList, Settings, LogOut, ChevronRight, Store } from "lucide-react";
+import { LayoutDashboard, Package, Tag, ClipboardList, Settings, LogOut, ChevronRight, Users, BarChart3, FileText, Ticket, MapPin } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 import { useLanguage } from "@/context/LanguageContext";
 
@@ -10,13 +10,18 @@ export default function AdminSidebar() {
   const pathname = usePathname();
   const router = useRouter();
   const { logout } = useAuth();
-  const { t } = useLanguage();
+  const { t, lang } = useLanguage();
 
   const items = [
     { href: "/admin/dashboard",  label: t("dashboard"),        icon: LayoutDashboard },
     { href: "/admin/products",   label: t("manageProducts"),   icon: Package },
     { href: "/admin/categories", label: t("manageCategories"), icon: Tag },
     { href: "/admin/orders",     label: t("manageOrders"),     icon: ClipboardList },
+    { href: "/admin/customers",  label: lang === "ar" ? "العملاء" : "Customers", icon: Users },
+    { href: "/admin/coupons",        label: lang === "ar" ? "أكواد الخصم" : "Coupons", icon: Ticket },
+    { href: "/admin/delivery-zones", label: lang === "ar" ? "مناطق التوصيل" : "Delivery Zones", icon: MapPin },
+    { href: "/admin/reports",    label: lang === "ar" ? "التقارير" : "Reports",  icon: BarChart3 },
+    { href: "/admin/audit-log",  label: lang === "ar" ? "سجل التدقيق" : "Audit Log", icon: FileText },
     { href: "/admin/store-info", label: t("storeSettings"),    icon: Settings },
   ];
 

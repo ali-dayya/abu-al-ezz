@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Cormorant+Garamond:wght@300;400;500;600&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600&family=Noto+Serif+Arabic:wght@300;400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Noto+Serif+Arabic:wght@300;400;500;600;700&display=swap');
 
 @tailwind base;
 @tailwind components;
@@ -20,7 +20,7 @@
 html { scroll-behavior: smooth; }
 
 body {
-  font-family: 'DM Sans', sans-serif;
+  font-family: var(--font-dm-sans), sans-serif;
   background-color: #FFFDF5;
   color: #1a1a1a;
   -webkit-font-smoothing: antialiased;
@@ -225,10 +225,73 @@ body {
 ::-webkit-scrollbar-track { background: #f1f1f1; }
 ::-webkit-scrollbar-thumb { background: #C9A84C; border-radius: 4px; }
 
+/* ── Skeleton loading ────────────────────────────────────────── */
+@keyframes skeleton-wave {
+  0%   { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+.skeleton {
+  background: linear-gradient(90deg, #f0ece4 25%, #fefcf8 50%, #f0ece4 75%);
+  background-size: 200% 100%;
+  animation: skeleton-wave 1.5s ease-in-out infinite;
+  border-radius: 8px;
+}
+.skeleton-dark {
+  background: linear-gradient(90deg, #1c1c1c 25%, #2a2a2a 50%, #1c1c1c 75%);
+  background-size: 200% 100%;
+  animation: skeleton-wave 1.5s ease-in-out infinite;
+  border-radius: 8px;
+}
+
+/* ── Focus visible (keyboard navigation) ────────────────────── */
+button:focus-visible,
+a:focus-visible,
+select:focus-visible {
+  outline: 2px solid #C9A84C;
+  outline-offset: 3px;
+  border-radius: 4px;
+}
+
+/* ── Skip to content (keyboard accessibility) ───────────────── */
+.skip-to-content {
+  position: absolute;
+  top: -999px;
+  left: 0;
+  z-index: 9999;
+  padding: 12px 20px;
+  background: #C9A84C;
+  color: #0d0d0d;
+  font-weight: 700;
+  font-size: 14px;
+  border-radius: 0 0 8px 0;
+  text-decoration: none;
+}
+.skip-to-content:focus {
+  top: 0;
+}
+
+/* ── Reduced motion ─────────────────────────────────────────── */
+@media (prefers-reduced-motion: reduce) {
+  .skeleton,
+  .skeleton-dark {
+    animation: none;
+    background: #f0ece4;
+  }
+  .skeleton-dark {
+    background: #1c1c1c;
+  }
+  html { scroll-behavior: auto; }
+}
+
 /* ── RTL helpers ─────────────────────────────────────────────── */
 [dir="rtl"] .rtl-flip { transform: scaleX(-1); }
 [dir="rtl"] .luxury-table thead tr th { text-align: right; }
 [dir="rtl"] .luxury-table tbody td { text-align: right; }
+[dir="rtl"] select {
+  background-position: left 12px center;
+  padding-right: 16px;
+  padding-left: 36px;
+}
 
 /* ── Status badges ───────────────────────────────────────────── */
 .badge-pending    { background:#FEF3C7; color:#92400E; border:1px solid #FDE68A; }
@@ -258,4 +321,15 @@ select {
   background-repeat: no-repeat;
   background-position: right 12px center;
   padding-right: 36px;
+}
+
+/* ── Print styles ───────────────────────────────────────────── */
+@media print {
+  body { background: #fff !important; }
+  nav, footer, .no-print, button, .sticky { display: none !important; }
+  main { padding: 0 !important; min-height: auto !important; }
+  .print-only { display: block !important; }
+  * { box-shadow: none !important; }
+  .rounded-2xl, .rounded-3xl { border-radius: 0 !important; }
+  @page { margin: 1cm; }
 }

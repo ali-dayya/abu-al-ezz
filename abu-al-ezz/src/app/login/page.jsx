@@ -92,7 +92,7 @@ export default function LoginPage() {
           </p>
 
           {error && (
-            <div className="mb-5 px-4 py-3 rounded-xl text-sm"
+            <div role="alert" aria-live="assertive" className="mb-5 px-4 py-3 rounded-xl text-sm"
               style={{ background:"#fef2f2", color:"#991b1b", border:"1px solid #fecaca" }}>
               {error}
             </div>
@@ -100,10 +100,11 @@ export default function LoginPage() {
 
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
-              <label className="block text-xs font-bold uppercase tracking-widest mb-2" style={{ color:"#C9A84C" }}>
+              <label htmlFor="login-email" className="block text-xs font-bold uppercase tracking-widest mb-2" style={{ color:"#C9A84C" }}>
                 {t("email")}
               </label>
               <input
+                id="login-email"
                 type="email"
                 value={form.email}
                 onChange={e=>setForm({...form, email:e.target.value})}
@@ -114,7 +115,7 @@ export default function LoginPage() {
 
             <div>
               <div className="flex items-center justify-between mb-2">
-                <label className="block text-xs font-bold uppercase tracking-widest" style={{ color:"#C9A84C" }}>
+                <label htmlFor="login-password" className="block text-xs font-bold uppercase tracking-widest" style={{ color:"#C9A84C" }}>
                   {t("password")}
                 </label>
                 <Link href="/forgot-password" className="text-xs font-semibold transition-colors"
@@ -126,6 +127,7 @@ export default function LoginPage() {
               </div>
               <div className="relative">
                 <input
+                  id="login-password"
                   type={showPass ? "text" : "password"}
                   value={form.password}
                   onChange={e=>setForm({...form, password:e.target.value})}
@@ -134,6 +136,7 @@ export default function LoginPage() {
                   style={{ paddingRight:"44px" }}
                 />
                 <button type="button" onClick={()=>setShowPass(!showPass)}
+                  aria-label={showPass ? (lang === "ar" ? "إخفاء كلمة المرور" : "Hide password") : (lang === "ar" ? "إظهار كلمة المرور" : "Show password")}
                   className="absolute right-3 top-1/2 -translate-y-1/2 transition-colors"
                   style={{ color:"#aaa" }}
                   onMouseEnter={e=>e.currentTarget.style.color="#C9A84C"}

@@ -62,10 +62,10 @@ module.exports = {
         }
       },
       fontFamily: {
-        display: ['Playfair Display', 'Georgia', 'serif'],
-        body: ['Cormorant Garamond', 'Georgia', 'serif'],
+        display: ['var(--font-playfair)', 'Georgia', 'serif'],
+        body: ['var(--font-cormorant)', 'Georgia', 'serif'],
         arabic: ['Noto Serif Arabic', 'serif'],
-        sans: ['DM Sans', 'sans-serif'],
+        sans: ['var(--font-dm-sans)', 'sans-serif'],
       },
       backgroundImage: {
         'gold-gradient': 'linear-gradient(135deg, #C9A84C 0%, #E8C97A 50%, #C9A84C 100%)',

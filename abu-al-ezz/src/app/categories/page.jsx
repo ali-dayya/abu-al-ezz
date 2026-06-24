@@ -28,7 +28,7 @@ export default function CategoriesPage() {
   return (
     <>
       <Navbar />
-      <main style={{ minHeight:"100vh", background:"#FFFDF5" }}>
+      <main id="main-content" style={{ minHeight:"100vh", background:"#FFFDF5" }}>
 
         {/* Header */}
         <section style={{ background:"#0d0d0d", padding:"60px 0 52px" }}>
