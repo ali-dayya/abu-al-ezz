@@ -35,6 +35,22 @@ jobs:
 
       - run: npm install --global vercel@54.15.1
 
+      - name: Sync Vercel production environment
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+          NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
+          NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
+          NEXT_PUBLIC_SITE_URL: ${{ secrets.NEXT_PUBLIC_SITE_URL }}
+        run: |
+          vercel env rm NEXT_PUBLIC_SUPABASE_URL production --yes --token="$VERCEL_TOKEN" || true
+          printf "%s" "$NEXT_PUBLIC_SUPABASE_URL" | vercel env add NEXT_PUBLIC_SUPABASE_URL production --token="$VERCEL_TOKEN"
+
+          vercel env rm NEXT_PUBLIC_SUPABASE_ANON_KEY production --yes --token="$VERCEL_TOKEN" || true
+          printf "%s" "$NEXT_PUBLIC_SUPABASE_ANON_KEY" | vercel env add NEXT_PUBLIC_SUPABASE_ANON_KEY production --token="$VERCEL_TOKEN"
+
+          vercel env rm NEXT_PUBLIC_SITE_URL production --yes --token="$VERCEL_TOKEN" || true
+          printf "%s" "$NEXT_PUBLIC_SITE_URL" | vercel env add NEXT_PUBLIC_SITE_URL production --token="$VERCEL_TOKEN"
+
       - run: vercel pull --yes --environment=production --token=${{ secrets.VERCEL_TOKEN }}
 
       - run: vercel build --prod --token=${{ secrets.VERCEL_TOKEN }}
